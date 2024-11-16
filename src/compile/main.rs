@@ -2,6 +2,8 @@ use std::any::Any;
 use crate::ast::*;
 use lalrpop_util::lalrpop_mod;
 use interpreter::*;
+use std::fs::File;
+use std::io::Write;
 
 // Import the ast module
 mod ast;
@@ -18,34 +20,40 @@ fn calculator4() {
     let ast: Box<Program> = calculator1::ProgramParser::new()
         .parse(
             "
-            fn add (a:i32, b:i32) -> i32 {
-                return(a + b);
+            type int1(g: i32) where {
+                g >= 20,
+                g <= 40
             };
 
-            type newint(c: i32) where {
+            type int2(c: i32) where {
                 c > 10,
-                c < 15
+                c < 20
             };
 
-            type newint2(c: newint) where {
-                c > 10,
-                c < 15
+            fn add (a:int1, b:int1) -> int2 {
+                return(a + b)
             };
 
-            fn main () -> i32 {
-                q: newint2;
-                w: i32;
-                e: i32;
-                getint(r);
-                show(r);
-                q := 1.6747544;
-                w := 2;
-                e := add(q, w);
-                return(e);
+            fn main () -> i64 {
+                a: int2;
+                a := add(15, 15);
+                return(a)
             };
             ",
         )
         .unwrap();
+
+    // Serialize AST to JSON string
+    let json_str = serde_json::to_string(&*ast).unwrap();
+
+    // Write the JSON string to a file
+    let mut file = File::create("ast_output.json").unwrap();
+    file.write_all(json_str.as_bytes()).unwrap();
+
+    // Optionally, you can print the result to the console as well
+    println!("Serialized AST written to file 'ast_output.json'");
+
     let ret = evaluate_program(*ast, false);
+
     println!("Result: {}", ret);
 }
