@@ -30,7 +30,7 @@ fn expression_inference<'a>(expression: Expr, symbol_table: &'a HashMap<String, 
     }
 }
 
-fn typecheck_function(function_definition: Block, ctx: Context) -> bool {
+pub fn typecheck_function(function_definition: Block, ctx: Context) -> bool {
     if let Block::FunctionDefinition(name, args, return_type, body) = function_definition {
 
         // Symbol Table: HashMap to store variable names and their corresponding Z3 values
@@ -67,7 +67,6 @@ fn typecheck_function(function_definition: Block, ctx: Context) -> bool {
             }
         }
 
-
         /* Now the program has been added, let's add type constraints! */
         let a = sym_table.get("result").unwrap();
         match a {
@@ -78,7 +77,6 @@ fn typecheck_function(function_definition: Block, ctx: Context) -> bool {
                 solver.assert(&not_gt_constraint);
             }
         }
-
 
         /* Check validity. */
         match solver.check() {

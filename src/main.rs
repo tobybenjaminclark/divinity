@@ -3,8 +3,9 @@ use lalrpop_util::lalrpop_mod;
 use typechecker::typecheck_demo;
 use program_ast::*;
 // Import the ast module
-mod program_ast;
 mod typechecker;
+
+mod program_ast;
 
 lalrpop_mod!(pub calculator1);
 
@@ -12,6 +13,14 @@ fn main() {
     calculator4();
     return;
 }
+
+
+fn typecheck_program(ast: Program) -> i16 {
+    match ast {
+
+    }
+}
+
 
 fn calculator4() {
     let ast: Box<Program> = calculator1::ProgramParser::new()
@@ -41,5 +50,4 @@ fn calculator4() {
         .unwrap();
     println!("ast: {:#?}", ast);
 
-    typecheck_demo();
 }
