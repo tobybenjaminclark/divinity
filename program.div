@@ -1,0 +1,20 @@
+
+fn add (a:i32, b:i32) -> i32 {
+    a + b;
+};
+
+type newint(c: int) where {
+    c > 10,
+    c < 15
+};
+
+
+fn main () -> i32 {
+    q: i32;
+    w: i32;
+    e: i32;
+    q := 1;
+    w := 2;
+    e := add(q, w);
+    return(e);
+};

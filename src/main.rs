@@ -1,8 +1,12 @@
 use std::any::Any;
 use crate::program_ast::*;
 use lalrpop_util::lalrpop_mod;
-use typechecker::typecheck_demo;
-use interpreter::*;
+use typechecker::{typecheck_demo,typecheck_function};
+use z3::{Config, Context, Solver, ast};
+use z3::ast::Ast;
+use std::fs;
+use std::io;
+
 
 // Import the ast module
 mod program_ast;
@@ -11,11 +15,21 @@ mod typechecker;
 
 lalrpop_mod!(pub calculator1);
 
-fn main() {
-    calculator4();
-    return;
-}
+fn main() -> io::Result<()> {
+    // Specify the file path
+    let file_path = "program.div";
 
+    // Read the file content to a String
+    let content = fs::read_to_string(file_path)?;
+
+    let ast: Box<Program> = calculator1::ProgramParser::new()
+        .parse(&*content)
+        .unwrap();
+    println!("ast: {:#?}", ast);
+    typecheck_demo();
+
+    Ok(())
+}
 
 fn typecheck_program(ast: Program) -> i16 {
     match ast {
@@ -23,7 +37,11 @@ fn typecheck_program(ast: Program) -> i16 {
             for block in blocks {
                 match block {
                     Block::FunctionDefinition(_, _, _, _) => {
-                        typecheck_function(block);
+                        // Create some config and a solver to work in.
+                        let mut config = Config::new();
+                        let ctx = Context::new(&config);
+
+                        typecheck_function(block, ctx);
                     }
                     Block::TypeDefinition(_, _, _) => {}
                 }
@@ -31,36 +49,4 @@ fn typecheck_program(ast: Program) -> i16 {
         }
     }
     return 5 as i16;
-}
-
-
-fn calculator4() {
-    let ast: Box<Program> = calculator1::ProgramParser::new()
-        .parse(
-            "
-            fn add (a:i32, b:i32) -> i32 {
-                a + b;
-            };
-
-            type newint(c: int) where {
-                c > 10,
-                c < 15
-            };
-
-
-            fn main () -> i32 {
-                q: i32;
-                w: i32;
-                e: i32;
-                q := 1;
-                w := 2;
-                e := add(q, w);
-                return(e);
-            };
-            ",
-        )
-        .unwrap();
-    println!("ast: {:#?}", ast);
-
-    typecheck_demo();
 }
