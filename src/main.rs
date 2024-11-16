@@ -1,34 +1,33 @@
-use z3::{Config, Context, Solver, ast};
+use std::any::Any;
+use std::fs::File;
+use std::io::{self, Read};
+use crate::program_ast::*;
+use lalrpop_util::lalrpop_mod;
+mod typechecker;
+mod program_ast;
+
+lalrpop_mod!(pub calculator1);
 
 fn main() {
-    // Step 1: Create a Z3 configuration and context
-    let mut config = Config::new();
-    let ctx = Context::new(&config);
-
-    // Step 2: Create a solver
-    let solver = Solver::new(&ctx);
-
-    // Step 3: Define variables
-    let x = ast::Int::new_const(&ctx, "x");
-    let y = ast::Int::new_const(&ctx, "y");
-
-    // Step 4: Assert an inequality (e.g., x < y)
-    let inequality = x.lt(&y);
-    solver.assert(&inequality);
-
-    // Step 5: Check satisfiability
-    match solver.check() {
-        z3::SatResult::Sat => {
-            println!("The inequality is satisfiable.");
-            if let Some(model) = solver.get_model() {
-                println!("Model: x = {}, y = {}", model.eval(&x, true).unwrap(), model.eval(&y, true).unwrap());
-            }
-        }
-        z3::SatResult::Unsat => {
-            println!("The inequality is not satisfiable.");
-        }
-        z3::SatResult::Unknown => {
-            println!("The satisfiability of the inequality is unknown.");
-        }
-    }
+    calculator4();
+    return;
 }
+
+fn calculator4() {
+    let program_code = read_file("program.di").expect("Failed to read the file");
+
+    let ast: Box<Program> = calculator1::ProgramParser::new()
+        .parse(&program_code)
+        .unwrap();
+
+    println!("AST: {:#?}", ast);
+
+}
+
+fn read_file(filename: &str) -> io::Result<String> {
+    let mut file = File::open(filename)?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+    Ok(contents)
+}
+

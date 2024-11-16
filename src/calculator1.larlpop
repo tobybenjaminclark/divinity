@@ -1,0 +1,160 @@
+use std::str::FromStr;
+use crate::ast::{Expr, Opcode, Statement, Block, TypedArgument, Program};
+
+grammar;
+
+pub Program: Box<Program> = {
+    <a: Semicolon<Block>> => Box::new(Program::Program(a))
+}
+
+pub Block: Block = {
+    TypeDefinition,
+    FunctionDefinition
+};
+
+pub FunctionDefinition : Block = {
+    // Function definition
+    "fn" <id: IDString> "(" <args: Comma<TypedArgument>> ")" "->" <ret_type: IDString> "{" <stmts: Semicolon<Statement>> "}" => {
+        Block::FunctionDefinition(id, args, ret_type, stmts)
+    }
+}
+
+// "if" <e1:Expr> "then" <e2:Expr> "else" <e3:Expr> => Box::new(Expr::Conditional(e1, e2, e3)),
+
+pub TypeDefinition : Block = {
+    // Type definition with refinements
+    "type" <id: IDString> "(" <args: Comma<TypedArgument>> ")" "where" "{" <refinements: Comma<Expr>> "}" => {
+        Block::TypeDefinition(id, args, refinements)
+    }
+}
+
+
+
+pub TypedArgument: TypedArgument = {
+    <id: IDString> ":" <e: IDString> => TypedArgument::TypedArgument(id, e)
+}
+
+pub Statement: Statement = {
+    Assignment,
+    TypeAssignment,
+     <e: Expr> => Statement::Expr(*e),
+}
+
+
+pub Assignment: Statement = {
+    <i: IDString> ":=" <e: Expr> => Statement::Assignment(i, e)
+}
+
+pub TypeAssignment: Statement = {
+    <i: IDString> ":" <e: IDString> => Statement::TypeAssignment(i, e)
+}
+
+
+
+/// Expressions
+pub Expr: Box<Expr> = {
+    IfExpr,
+    ArithExpr,
+};
+
+
+// If Else Logic
+pub IfExpr: Box<Expr> = {
+    "if" <e1:Expr> "then" <e2:Expr> "else" <e3:Expr> => Box::new(Expr::Conditional(e1, e2, e3)),
+}
+
+
+// Other...
+pub ArithExpr: Box<Expr> = {
+    ArithExpr ExprOp Factor => Box::new(Expr::Op(<>)),
+    Factor,
+}
+
+
+/// Expression Level Operators
+ExprOp: Opcode = {
+    "+" => Opcode::Add,
+    "-" => Opcode::Sub,
+    "<" => Opcode::Lt,
+    ">" => Opcode::Gt,
+    "<=" => Opcode::Lteq,
+    ">=" => Opcode::Gteq
+};
+
+
+
+/// Factor
+Factor: Box<Expr> = {
+    Factor FactorOp Term => Box::new(Expr::Op(<>)),
+    Term,
+};
+
+
+
+/// Factor Operator
+FactorOp: Opcode = {
+    "*" => Opcode::Mul,
+    "/" => Opcode::Div,
+};
+
+
+
+
+/// Terms
+Term: Box<Expr> = {
+    Identifier,
+    Num => Box::new(Expr::Number(<>)),
+    "(" <Expr> ")",
+    FunctionCall,
+};
+
+
+
+/// Numbers
+Num: i32 = {
+    r"-?[0-9]+" => i32::from_str(<>).unwrap()
+};
+
+/// Function Calls
+FunctionCall: Box<Expr> = {
+    <i: IDString> "(" <arg: Comma<Expr>> ")" => {
+        Box::new(Expr::FunctionCall(i, arg))
+    }
+};
+
+
+
+/// Comma Separator Template
+Comma<T>: Vec<T> = {
+    <mut v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
+};
+
+
+
+/// Semicolon Separator Template
+Semicolon<T>: Vec<T> = {
+    <mut v:(<T> ";")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
+};
+
+
+
+/// Identifier
+Identifier: Box<Expr> = {
+    r"[a-zA-Z_][a-zA-Z0-9_`]*" => Box::new(Expr::Identifier(String::from(<>))),
+};
+
+IDString: String = {
+    r"[a-zA-Z_][a-zA-Z0-9_`]*" => String::from(<>),
+}
