@@ -1,4 +1,5 @@
 use std::any::Any;
+use std::fs;
 use crate::ast::*;
 use lalrpop_util::lalrpop_mod;
 use interpreter::*;
@@ -17,29 +18,15 @@ fn main() {
 }
 
 fn calculator4() {
+
+    // Specify the file path
+    let file_path = "program.div";
+
+    // Read the file content to a String
+    let content = fs::read_to_string(file_path).unwrap();
+
     let ast: Box<Program> = calculator1::ProgramParser::new()
-        .parse(
-            "
-            type int1(g: i32) where {
-                g >= 20,
-                g <= 40
-            };
-
-            type int2(c: i32) where {
-                c > 10,
-                c < 20
-            };
-
-            fn add (a:int1, b:int1) -> int2 {
-                return(a + b)
-            };
-
-            fn main () -> i64 {
-                a: int2;
-                a := add(15, 15);
-                return(a)
-            };
-            ",
+        .parse(content.as_str()
         )
         .unwrap();
 
