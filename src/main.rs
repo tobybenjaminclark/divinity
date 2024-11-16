@@ -1,11 +1,10 @@
 use std::any::Any;
-use crate::ast::*;
 use lalrpop_util::lalrpop_mod;
-use interpreter::*;
-
+use typechecker::typecheck_demo;
+use program_ast::*;
 // Import the ast module
-mod ast;
-mod interpreter;
+mod program_ast;
+mod typechecker;
 
 lalrpop_mod!(pub calculator1);
 
@@ -41,6 +40,6 @@ fn calculator4() {
         )
         .unwrap();
     println!("ast: {:#?}", ast);
-    let ret = evaluate_program(*ast);
-    println!("the program returned: {:?}", ret);
+
+    typecheck_demo();
 }
