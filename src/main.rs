@@ -28,8 +28,7 @@ fn main() -> io::Result<()> {
         .parse(&*content)
         .unwrap();
     println!("ast: {:#?}", ast);
-    typecheck_demo();
-
+    typecheck_program(*ast);
     Ok(())
 }
 
@@ -60,16 +59,12 @@ fn typecheck_program(ast: Program) -> Result<String, String> {
                                         base_type: (*base_type).parse().unwrap(),
                                         internal_identifier: (*internal_identifier).parse().unwrap()
                                     };
-
                                     types.insert(type_def.identifier.clone(), type_def);
                                 }
                             }
                         } else {
                             return Err(format!("Type Declaration for {} takes no arguments.", identifier));
                         }
-
-
-
                     }
                 }
             }

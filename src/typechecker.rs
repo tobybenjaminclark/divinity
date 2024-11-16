@@ -1,10 +1,13 @@
+use std::any::Any;
 use std::collections::HashMap;
+use std::ops::{Add, Mul, Sub};
 use z3::{Config, Context, Solver, ast};
 use z3::ast::Ast;
 use crate::program_ast::Block::FunctionDefinition;
 use crate::program_ast::{Block, Expr, Opcode, Statement};
 use crate::program_ast::TypedArgument::TypedArgument;
 use crate::program_ast;
+
 
 
 #[derive(Debug)]
@@ -34,6 +37,8 @@ fn expression_inference<'a>(expression: Expr, symbol_table: &'a HashMap<String, 
     }
 }
 
+
+
 #[derive(Clone, Debug)]
 pub struct TypeInstance {
     pub(crate) identifier: String, // type name
@@ -44,12 +49,102 @@ pub struct TypeInstance {
 }
 
 
-pub fn typecheck_function(function_definition: Block, types: HashMap<String, TypeInstance>, ctx: Context) -> bool {
+
+pub fn add_negative_type_constraint<'a>(type_inst: TypeInstance, symb_table: &'a HashMap<String, Z3Value<'a>>, ctx: Context, slvr: Solver) -> () {
+
+    // Destructure the type_inst
+    let TypeInstance {
+        identifier,
+        args,
+        refinements,
+        base_type,
+        internal_identifier,
+    } = type_inst;
+
+    for refinement in refinements {
+        convert_expr_to_z3(refinement, &symb_table, &ctx, &slvr);
+    }
+}
+
+fn convert_expr_to_z3<'a>(expr: Box<Expr>, symb_table: &HashMap<String, Z3Value<'a>>, ctx: &Context, solver: &Solver) -> ast::Int {
+    match expr.as_ref() {
+        Expr::Number(n) => ast::Int::from_i64(ctx, *n as i64),
+        Expr::Op(lhs, op, rhs) => {
+            let left = convert_expr_to_z3(Box::from(*lhs.clone()), symb_table, ctx, solver);
+            let right = convert_expr_to_z3(Box::from(*rhs.clone()), symb_table, ctx, solver);
+            match op {
+                Opcode::Add => left.add(&right),
+                Opcode::Sub => left.sub(&right),
+                Opcode::Mul => left.mul(&right),
+                Opcode::Div => left.div(&right),
+                // For comparison operators, create a new variable that represents the condition
+                Opcode::Gt => {
+                    // Create a fresh integer variable to store the result of the comparison
+                    let result = ast::Int::new_const(ctx, "gt_result");
+                    let comparison = left.gt(&right);
+                    solver.assert(&comparison.implies(&result._eq(&ast::Int::from_i64(ctx, 1))));
+                    solver.assert(&comparison.not().implies(&result._eq(&ast::Int::from_i64(ctx, 0))));
+                    result
+                }
+                Opcode::Lt => {
+                    let result = ast::Int::new_const(ctx, "lt_result");
+                    let comparison = left.lt(&right);
+                    solver.assert(&comparison.implies(&result._eq(&ast::Int::from_i64(ctx, 1))));
+                    solver.assert(&comparison.not().implies(&result._eq(&ast::Int::from_i64(ctx, 0))));
+                    result
+                }
+                Opcode::Gteq => {
+                    let result = ast::Int::new_const(ctx, "gteq_result");
+                    let comparison = left.ge(&right);
+                    solver.assert(&comparison.implies(&result._eq(&ast::Int::from_i64(ctx, 1))));
+                    solver.assert(&comparison.not().implies(&result._eq(&ast::Int::from_i64(ctx, 0))));
+                    result
+                }
+                Opcode::Lteq => {
+                    let result = ast::Int::new_const(ctx, "lteq_result");
+                    let comparison = left.le(&right);
+                    solver.assert(&comparison.implies(&result._eq(&ast::Int::from_i64(ctx, 1))));
+                    solver.assert(&comparison.not().implies(&result._eq(&ast::Int::from_i64(ctx, 0))));
+                    result
+                }
+            }
+        }
+        Expr::Identifier(id) => {
+            // Assuming identifiers map to variables in symb_table
+            symb_table.get(id).map(|z3_val| z3_val.to_expr()).unwrap_or_else(|| ctx.empty())
+        }
+        Expr::FunctionCall(_, _) => {
+            // You'd need to handle function calls, possibly by translating them into Z3 expressions
+            ctx.empty() // Placeholder for now
+        }
+        Expr::Conditional(cond, then_expr, else_expr) => {
+            let condition = convert_expr_to_z3(cond, symb_table, ctx, solver);
+            let then_expr = convert_expr_to_z3(then_expr, symb_table, ctx, solver);
+            let else_expr = convert_expr_to_z3(else_expr, symb_table, ctx, solver);
+            ctx.if_then_else(&condition, &then_expr, &else_expr)
+        }
+    }
+}
+
+
+pub fn typecheck_function(function_definition: Block, types: HashMap<String, TypeInstance>, ctx: Context) -> Result<String, String> {
     if let program_ast::Block::FunctionDefinition(name, args, return_type, body) = function_definition {
 
         // Symbol Table: HashMap to store variable names and their corresponding Z3 values
+        let mut type_table: HashMap<String, String> = HashMap::new();
         let mut sym_table: HashMap<String, Z3Value> = HashMap::new();
         let solver = Solver::new(&ctx);
+
+        for arg in args {
+            match arg {
+                TypedArgument(iden, typ) => {
+                    let x = ast::Int::new_const(&ctx, iden.clone());
+                    let _ = sym_table.insert(iden.clone(), Z3Value::Int(x));
+
+                    type_table.insert(iden, typ);
+                }
+            }
+        }
 
         // Process the function body
         for stmnt in body {
@@ -76,20 +171,44 @@ pub fn typecheck_function(function_definition: Block, types: HashMap<String, Typ
                         panic!("Unexpected Z3Value variant in symbol table");
                     }
                 }
+
                 // Handle other statement types (if any)
+                Statement::TypeAssignment(name, typ) => {
+                    // Check if typ exists in the `types` HashMap
+                    if !types.contains_key(&typ) {
+                        return Err(format!("Type doesn't exist: {}", typ)); // Return error if type is not found in `types`
+                    }
+
+                    // Ensure that name:typ doesn't already exist in the `type_table`
+                    if type_table.contains_key(&name) {
+                        return Err(format!("Variable {} has already been assigned a type ({})", name, typ));
+                    }
+
+                    // If all checks pass, insert the name:typ pair into the type_table
+                    type_table.insert(name.clone(), typ.clone());
+                }
                 _ => {}
             }
         }
 
+        // Iterating over the HashMap
+        for (key, value) in &sym_table {
+            println!("Iden: {}, Value: {:?}", key, value);
+        }
 
-        /* Now the program has been added, let's add type constraints! */
-        let a = sym_table.get("result").unwrap();
-        match a {
-            Z3Value::Int(int_x) => {
-                // Now you can use int_x as an ast::Int
-                let gt_constraint = int_x.gt(&ast::Int::from_i64(&ctx, 12 as i64));
-                let not_gt_constraint = gt_constraint.not(); // Negate the 'greater than' condition
-                solver.assert(&not_gt_constraint);
+        // Iterating over the HashMap
+        for (key, value) in &type_table {
+            // Check if the value is defined in the 'types' HashMap
+            match types.get(value) {
+                Some(_) => {
+                    // Value exists in types, proceed with the next item
+                    println!("Type '{}' is defined for key '{}'.", value, key);
+
+                }
+                None => {
+                    // Value is not defined in types, return an error
+                    return Err(format!("Type '{}' not defined for key '{}'", value, key));
+                }
             }
         }
 
@@ -97,28 +216,18 @@ pub fn typecheck_function(function_definition: Block, types: HashMap<String, Typ
         /* Check validity. */
         match solver.check() {
             z3::SatResult::Sat => {
-                println!("We found a contradiction!");
-                if let Some(model) = solver.get_model() {
-                    let a = sym_table.get("result").unwrap();
-                    match a {
-                        Z3Value::Int(int_x) => {
-                            println!("Model: result = {}", model.eval(int_x, true).unwrap());
-                        }
-                    }
-                }
+                println!("We found a contradiction in {}", name);
             }
             z3::SatResult::Unsat => {
-                println!("The program is valid.");
+                println!("The {} function is valid.", name);
             }
             z3::SatResult::Unknown => {
                 println!("The satisfiability of the inequality is unknown.");
             }
         }
     }
-    true // return true or some result depending on the logic
+    return Ok("Function has passed.".parse().unwrap())
 }
-
-
 
 
 
@@ -138,7 +247,7 @@ pub fn typecheck_demo() {
         vec![
             Statement::Assignment(
                 "result".to_string(),
-                Box::new(Expr::Number(10 as i32)),
+                Box::new(Expr::Number(10i32)),
             ),
             Statement::Expr(Expr::Identifier("result".to_string())), // Return the result
         ],
