@@ -1,5 +1,6 @@
 use std::any::Any;
 use std::collections::HashMap;
+use std::hash::Hash;
 use crate::ast::{Block, Expr, Opcode, Program, Statement, TypedArgument};
 
 
@@ -21,7 +22,7 @@ pub fn evaluate_program(program: Program) -> Box<dyn Any> {
 
     // get main
     if let Some(declaration) = functions.get("main") {
-        let ret = evaluate_block(declaration, symbol_table);
+        let ret = evaluate_function(declaration, &vec![], &functions);
         return Box::from(ret);
     }
 
@@ -30,17 +31,18 @@ pub fn evaluate_program(program: Program) -> Box<dyn Any> {
 }
 
 // evaluate blocks
-fn evaluate_block(block: &Block, symbol_table: SymbolTable) {
+fn evaluate_block(block: &Block, functions: &HashMap<String, Block>) {
 
     match block {
         Block::FunctionDefinition(name, vars, ret, body) => {
-            evaluate_function(block, &vec![], symbol_table)
+            // todo: this should not pass in empty parameters
+            evaluate_function(block, &vec![], functions);
         }
         Block::TypeDefinition(_, _, _) => {}
     }
 }
 
-fn evaluate_function(function: &Block, args: &Vec<&Expr>, symbol_table: SymbolTable) {
+fn evaluate_function(function: &Block, args: &Vec<Box<Expr>>, functions: &HashMap<String, Block>) -> Var {
         // create a symbol table with vars
         let mut symbol_table: SymbolTable = HashMap::new();
 
@@ -51,38 +53,53 @@ fn evaluate_function(function: &Block, args: &Vec<&Expr>, symbol_table: SymbolTa
                 for (index, param) in params.iter().enumerate() {
                     match param {
                         TypedArgument::TypedArgument(name, typ) => {
-                            symbol_table.insert(name.to_string(), evaluate_expression(args[index]));
+                            symbol_table.insert(name.to_string(), evaluate_expression(args[index].clone()));
                         }
                     }
                 }
 
-                for var in args {
-                    // insert the called var value in its corresponding position in the symbol table
-                    symbol_table.insert(String::from(name), evaluate_expression(var));
-                }
+                // evaluate the list of statements in the body
+                evaluate_function_body(body, &mut symbol_table, functions)
             }
             _ => {panic!("expected function")}
         }
 }
 
-fn evaluate_function_body(body: &Vec<Statement>, symbol_table: &SymbolTable) {
+fn evaluate_function_body(body: &Vec<Statement>, symbol_table: &mut SymbolTable, functions: &HashMap<String, Block>) -> Var {
+    let return_str = String::from("return");
     for statement in body {
-        evaluate_statement(statement, symbol_table);
-    }
-}
+        match statement {
+            Statement::Assignment(name, expr) => {
+                symbol_table.insert(name.to_string(), evaluate_expression(expr.clone()));
+            }
+            Statement::TypeAssignment(name, val) => {
+                // todo: give name this type
+            }
+            Statement::Expr(expr) => {
+                match expr {
+                    Expr::FunctionCall(fname, args) => {
+                        if fname == &String::from("return") {
+                            if args.len() != 1 {panic!("a function can only return one thing")};
+                            return evaluate_expression(args[0].clone()) // todo get the actual type
+                        }
+                        let function_definition = functions.get(fname).ok_or(format!("function not found: {}", fname)).expect("function not found");
+                        evaluate_function(function_definition, args, functions);
 
-fn evaluate_statement(statement: &Statement, symbol_table: &SymbolTable) {
-    match statement {
-        Statement::Assignment(name, expr) => {}
-        Statement::TypeAssignment(name, val) => {}
-        Statement::Expr(expr) => {
+                    }
+                    _ => panic!("invalid statement")
+
+                }
+            }
+
         }
     }
+
+    Var::Int(0)
 }
 
-fn evaluate_expression(expr: &Expr) -> Var {
-    match expr {
-        Expr::Number(n) => {Var::Int(*n)}
+fn evaluate_expression(expr: Box<Expr>) -> Var {
+    match *expr {
+        Expr::Number(n) => {Var::Int(n)}
         Expr::Op(l, op, r) => {Var::Int(0)}
         Expr::FunctionCall(name, params) => {Var::Int(0)}
         Expr::Conditional(i, t, e) => {Var::Int(0)}
