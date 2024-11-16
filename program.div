@@ -1,20 +1,20 @@
 
-fn add (a:i32, b:i32) -> i32 {
-    a + b;
+type int1(g: int) where {
+    g >= 20,
+    g <= 40
 };
 
-type newint(c: int) where {
+type int2(c: int) where {
     c > 10,
-    c < 15
+    c < 20
 };
 
+fn add (a:int1, b:int1) -> int2 {
+    return(a + b)
+};
 
-fn main () -> i32 {
-    q: i32;
-    w: i32;
-    e: i32;
-    q := 1;
-    w := 2;
-    e := add(q, w);
-    return(e);
+fn main () -> i64 {
+    a: int2;
+    a := add(15, 15);
+    return(a)
 };

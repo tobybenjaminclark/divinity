@@ -34,7 +34,17 @@ fn expression_inference<'a>(expression: Expr, symbol_table: &'a HashMap<String, 
     }
 }
 
-pub fn typecheck_function(function_definition: program_ast::Block, ctx: Context) -> bool {
+#[derive(Clone, Debug)]
+pub struct TypeInstance {
+    pub(crate) identifier: String, // type name
+    pub(crate) args: Vec<crate::program_ast::TypedArgument>, // list of param names to their types
+    pub(crate) refinements: Vec<Box<Expr>>,
+    pub(crate) base_type: String,
+    pub(crate) internal_identifier: String
+}
+
+
+pub fn typecheck_function(function_definition: Block, types: HashMap<String, TypeInstance>, ctx: Context) -> bool {
     if let program_ast::Block::FunctionDefinition(name, args, return_type, body) = function_definition {
 
         // Symbol Table: HashMap to store variable names and their corresponding Z3 values
@@ -134,6 +144,7 @@ pub fn typecheck_demo() {
         ],
     );
 
-    typecheck_function(add_function, ctx);
+    let mut types = HashMap::new();
+    typecheck_function(add_function, types, ctx);
 
 }
