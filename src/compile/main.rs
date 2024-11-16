@@ -22,6 +22,11 @@ fn calculator4() {
                 a + b;
             };
 
+            type newint(a: int) where {
+                a
+            };
+
+
             fn main () -> i32 {
                 a: i32;
                 b: i32;

@@ -8,10 +8,27 @@ pub Program: Box<Program> = {
 }
 
 pub Block: Block = {
-    "fn" <id:IDString> "(" <args: Comma<TypedArgument>> ")" "->" <id2:IDString> "{" <stmts: Semicolon<Statement>> "}" => {
-        Block::FunctionDefinition(id, args, id2, stmts)
+    TypeDefinition,
+    FunctionDefinition
+};
+
+pub FunctionDefinition : Block = {
+    // Function definition
+    "fn" <id: IDString> "(" <args: Comma<TypedArgument>> ")" "->" <ret_type: IDString> "{" <stmts: Semicolon<Statement>> "}" => {
+        Block::FunctionDefinition(id, args, ret_type, stmts)
     }
 }
+
+// "if" <e1:Expr> "then" <e2:Expr> "else" <e3:Expr> => Box::new(Expr::Conditional(e1, e2, e3)),
+
+pub TypeDefinition : Block = {
+    // Type definition with refinements
+    "type" <id: IDString> "(" <args: Comma<TypedArgument>> ")" "where" "{" <refinements: Comma<Expr>> "}" => {
+        Block::TypeDefinition(id, args, refinements)
+    }
+}
+
+
 
 pub TypedArgument: TypedArgument = {
     <id: IDString> ":" <e: IDString> => TypedArgument::TypedArgument(id, e)

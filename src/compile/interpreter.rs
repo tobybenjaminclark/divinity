@@ -46,6 +46,7 @@ fn evaluate_block(block: &Block, functions: &HashMap<String, Block>) {
 
             // evaluate the body with evaluate_function_body(body, symbol table)
         }
+        Block::TypeDefinition(_, _, _) => {}
     }
 }
 

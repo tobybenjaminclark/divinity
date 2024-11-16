@@ -13,6 +13,12 @@
             String,
             Vec<Statement>,
         ),
+
+        TypeDefinition(
+            String, // type name
+            Vec<TypedArgument>, // list of param names to their types
+            Vec<Box<Expr>> // list of refinements
+        )
     }
 
     #[derive(Clone, Debug)]
