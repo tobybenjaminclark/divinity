@@ -13,6 +13,17 @@ fn add (a:int1, b:int1) -> int2 {
     return(a + b)
 };
 
+fn ssa_test(a:i32) -> i32 {
+    a1: i32;
+    a2: i32;
+    a3: i32;
+
+    a = a1;
+    a = a2;
+    a = a3;
+    return(a)
+};
+
 fn main () -> i64 {
     a: int2;
     a := add(15, 15);
