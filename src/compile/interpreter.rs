@@ -1,6 +1,7 @@
 use std::any::Any;
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::{fmt, io};
 use std::ops::Mul;
 use crate::ast::{Block, Expr, Opcode, Program, Statement, TypedArgument};
 
@@ -9,7 +10,15 @@ use crate::ast::{Block, Expr, Opcode, Program, Statement, TypedArgument};
 pub enum Var {
     Int(i32),
     Float(f64),
-    None // temp?
+}
+
+impl fmt::Display for Var {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            Var::Int(ref value) => write!(f, "{}", value),
+            Var::Float(ref value) => write!(f, "{}", value),
+        }
+    }
 }
 type SymbolTable = HashMap<String, Var>;
 
@@ -104,9 +113,7 @@ fn evaluate_function_body(
                 symbol_table.insert(name.clone(), value);
             }
 
-
             Statement::TypeAssignment(name, _) => {
-
                 if debug {
                     println!("[DEBUG] Skipping type assignment for {}", name);
                 }
@@ -115,13 +122,24 @@ fn evaluate_function_body(
                 if debug {
                     println!("[DEBUG] Evaluating expression: {:?}", expr);
                 }
-                return evaluate_expression(Box::new(expr.clone()), symbol_table, functions, custom_types, debug);
+                // Check for "return" expression
+                if let Expr::FunctionCall(ref fname, ref args) = *expr {
+                    if fname == "return" {
+                        if args.len() != 1 {
+                            panic!("A function can only return one value");
+                        }
+                        return evaluate_expression(args[0].clone(), symbol_table, functions, custom_types, debug);
+                    }
+                }
+                evaluate_expression(Box::new(expr.clone()), symbol_table, functions, custom_types, debug);
             }
         }
     }
 
+    // Default return value in case no "return" was encountered
     Var::Int(0)
 }
+
 
 fn evaluate_expression(
     expr: Box<Expr>,
@@ -211,21 +229,51 @@ fn evaluate_op(
 }
 
 // Pass debug flag to helper functions
-fn evaluate_function_call(expr: &Expr, symbol_table: &mut SymbolTable, functions: &HashMap<String, Block>, custom_types: &HashMap<String, String>, debug: bool) -> Var {
+fn evaluate_function_call(
+    expr: &Expr,
+    symbol_table: &mut SymbolTable,
+    functions: &HashMap<String, Block>,
+    custom_types: &HashMap<String, String>,
+    debug: bool,
+) -> Var {
     match expr {
         Expr::FunctionCall(fname, args) => {
             if fname == "return" {
                 if args.len() != 1 {
                     panic!("A function can only return one value");
                 }
-                evaluate_expression(args[0].clone(), symbol_table, functions, custom_types, debug)
+                return evaluate_expression(args[0].clone(), symbol_table, functions, custom_types, debug);
             } else if fname == "show" {
                 if args.len() != 1 {
                     panic!("A show function can only accept one argument");
                 }
                 let value = evaluate_expression(args[0].clone(), symbol_table, functions, custom_types, debug);
-                println!("divine stdout: {:?}", value);
-                return Var::Int(1);
+                println!("divine stdout: {}", value);
+                return Var::Int(1); // Successful show execution
+            } else if fname == "getint" {
+                if args.len() != 1 {
+                    panic!("A getint function can only accept one argument");
+                }
+                match *args[0].clone() {
+                    Expr::Identifier(name) => {
+                        let mut input_line = String::new();
+                        println!("enter a value:");
+                        io::stdin()
+                            .read_line(&mut input_line)
+                            .expect("Failed to read line");
+                        let trimmed_input = input_line.trim();
+                        if let Ok(value) = trimmed_input.parse::<i32>() {
+                            symbol_table.insert(name, Var::Int(value));
+                            return Var::Int(1); // Successful input handling
+                        } else if let Ok(value) = trimmed_input.parse::<f64>() {
+                            symbol_table.insert(name, Var::Float(value));
+                            return Var::Int(1); // Successful input handling
+                        } else {
+                            panic!("Input could not be parsed as an integer, float, or empty value");
+                        }
+                    }
+                    _ => panic!("Expected identifier in getint function call"),
+                }
             } else {
                 // Retrieve the function definition
                 let function_definition = functions
@@ -247,18 +295,15 @@ fn evaluate_function_call(expr: &Expr, symbol_table: &mut SymbolTable, functions
                     .collect();
 
 
-                println!(
-                    "Calling function '{}' with evaluated args: {:?}",
-                    fname, args_values
-                );
 
                 // Evaluate the function with the evaluated arguments
-                evaluate_function(function_definition, &args_values, functions, custom_types, debug)
+                return evaluate_function(function_definition, &args_values, functions, custom_types, debug);
             }
         }
         _ => panic!("Expected a function call"),
     }
 }
+
 fn get_function_names(program: &Program) -> HashMap<String, Block> {
     let mut function_map = HashMap::new();
     if let Program::Program(blocks) = program {

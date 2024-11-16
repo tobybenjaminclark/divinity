@@ -19,7 +19,7 @@ fn calculator4() {
         .parse(
             "
             fn add (a:i32, b:i32) -> i32 {
-                a + b;
+                return(a + b);
             };
 
             type newint(c: i32) where {
@@ -36,6 +36,8 @@ fn calculator4() {
                 q: newint2;
                 w: i32;
                 e: i32;
+                getint(r);
+                show(r);
                 q := 1.6747544;
                 w := 2;
                 e := add(q, w);
@@ -44,7 +46,6 @@ fn calculator4() {
             ",
         )
         .unwrap();
-    println!("ast: {:#?}", ast);
-    let ret = evaluate_program(*ast, true);
-    println!("the program returned: {:?}", ret);
+    let ret = evaluate_program(*ast, false);
+    println!("Result: {}", ret);
 }
