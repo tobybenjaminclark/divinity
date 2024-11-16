@@ -18,39 +18,29 @@ fn calculator4() {
     let ast: Box<Program> = calculator1::ProgramParser::new()
         .parse(
             "
-            fn add (a:i32, c:i32) -> i32 {
+            fn add (a:i32, b:i32) -> i32 {
                 a + b;
             };
 
-            type newint(a: int) where {
-                a > 10,
-                a < 15
+            type newint(c: int) where {
+                c > 10,
+                c < 15
             };
 
 
             fn main () -> i32 {
-                a: i32;
-                b: i32;
-                c: i32;
-                a := 1;
-                b := 2;
-                c := add(a, b);
-                show(c);
-                return(1);
+                q: i32;
+                w: i32;
+                e: i32;
+                q := 1;
+                w := 2;
+                e := add(q, w);
+                return(e);
             };
             ",
         )
         .unwrap();
     println!("ast: {:#?}", ast);
     let ret = evaluate_program(*ast);
-    print_result(ret);
-}
-
-fn print_result(result: Box<dyn Any>) {
-    // Attempt to downcast the Box<dyn Any> into a known type
-    if let Some(_) = result.downcast_ref::<(i32)>() {
-        println!("Result is a unit: ()");
-    } else {
-        println!("Result is not a unit type.");
-    }
+    println!("the program returned: {:?}", ret);
 }
