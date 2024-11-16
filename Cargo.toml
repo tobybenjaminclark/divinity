@@ -3,12 +3,9 @@ name = "divinity"
 version = "0.1.0"
 edition = "2021"
 
-[[bin]]
-name = "folder_main"
-path = "src/compile/main.rs"
-
 [build-dependencies] # <-- We added this and everything after!
 lalrpop = "0.20.2"
 
 [dependencies]
+z3 = {version="0.12", features = ["static-link-z3"]}
 lalrpop-util = { version = "0.20.2", features = ["lexer", "unicode"] }

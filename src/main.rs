@@ -1,11 +1,13 @@
 use std::any::Any;
-use crate::ast::*;
+use crate::program_ast::*;
 use lalrpop_util::lalrpop_mod;
+use typechecker::typecheck_demo;
 use interpreter::*;
 
 // Import the ast module
-mod ast;
+mod program_ast;
 mod interpreter;
+mod typechecker;
 
 lalrpop_mod!(pub calculator1);
 
@@ -13,6 +15,24 @@ fn main() {
     calculator4();
     return;
 }
+
+
+fn typecheck_program(ast: Program) -> i16 {
+    match ast {
+        Program::Program(blocks) => {
+            for block in blocks {
+                match block {
+                    Block::FunctionDefinition(_, _, _, _) => {
+                        typecheck_function(block);
+                    }
+                    Block::TypeDefinition(_, _, _) => {}
+                }
+            }
+        }
+    }
+    return 5 as i16;
+}
+
 
 fn calculator4() {
     let ast: Box<Program> = calculator1::ProgramParser::new()
@@ -41,6 +61,6 @@ fn calculator4() {
         )
         .unwrap();
     println!("ast: {:#?}", ast);
-    let ret = evaluate_program(*ast);
-    println!("the program returned: {:?}", ret);
+
+    typecheck_demo();
 }

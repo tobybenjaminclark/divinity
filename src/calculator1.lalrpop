@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use crate::ast::{Expr, Opcode, Statement, Block, TypedArgument, Program};
+use crate::program_ast::{Expr, Opcode, Statement, Block, TypedArgument, Program};
 
 grammar;
 
