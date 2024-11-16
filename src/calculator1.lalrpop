@@ -75,6 +75,10 @@ pub ArithExpr: Box<Expr> = {
 ExprOp: Opcode = {
     "+" => Opcode::Add,
     "-" => Opcode::Sub,
+    "<" => Opcode::Lt,
+    ">" => Opcode::Gt,
+    "<=" => Opcode::Lteq,
+    ">=" => Opcode::Gteq
 };
 
 

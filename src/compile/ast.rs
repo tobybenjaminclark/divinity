@@ -48,4 +48,8 @@
         Div,
         Add,
         Sub,
+        Gt,
+        Lt,
+        Gteq,
+        Lteq
     }

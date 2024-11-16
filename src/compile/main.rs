@@ -23,7 +23,8 @@ fn calculator4() {
             };
 
             type newint(a: int) where {
-                a
+                a > 10,
+                a < 15
             };
 
 
