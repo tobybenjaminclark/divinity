@@ -2,7 +2,7 @@
   "name": "divinity_website",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://aswarbs.github.io/divinity/divinity_website",  // Add this line
+  "homepage": "https://tobybenjaminclark.github.io/divinity/divinity_website",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -11,15 +11,15 @@
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4",
-    "gh-pages": "^3.2.3"  // Add the gh-pages package here
+    "gh-pages": "^3.2.3"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "predeploy": "npm run build",  // Add predeploy script
-    "deploy": "gh-pages -d build"  // Add deploy script
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [

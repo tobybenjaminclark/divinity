@@ -20,25 +20,36 @@ fn calculator4() {
     let ast: Box<Program> = calculator1::ProgramParser::new()
         .parse(
             "
-            type int1(g: i32) where {
-                g >= 20,
-                g <= 40
-            };
+                type int1(g: i32) where {
+                    g >= 20,
+                    g <= 40
+                };
 
-            type int2(c: i32) where {
-                c > 10,
-                c < 20
-            };
+                type int2(c: i32) where {
+                    c > 10,
+                    c < 20
+                };
 
-            fn add (a:int1, b:int1) -> int2 {
-                return(a + b)
-            };
+                fn add (a:int1, b:int1) -> int2 {
+                    return(a + b)
+                };
 
-            fn main () -> i64 {
-                a: int2;
-                a := add(15, 15);
-                return(a)
-            };
+                fn ssa_test(a:i32) -> i32 {
+                    a1: i32;
+                    a2: i32;
+                    a3: i32;
+
+                    a := a1;
+                    a := a2;
+                    a := a3;
+                    return(a)
+                };
+
+                fn main () -> i64 {
+                    a: int2;
+                    a := add(15, 15);
+                    return(a)
+                };
             ",
         )
         .unwrap();
