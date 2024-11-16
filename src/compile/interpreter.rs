@@ -15,6 +15,9 @@ type SymbolTable = HashMap<String, Var>;
 pub fn evaluate_program(program: Program, debug: bool) -> Var {
     // Get function names
     let functions = get_function_names(&program);
+    let custom_types: HashMap<String, String> = get_custom_types(&program);
+    println!("custom types: {:?}", custom_types);
+
     if debug {
         println!("Available functions: {:?}", functions.keys());
     }
@@ -258,4 +261,37 @@ fn get_function_names(program: &Program) -> HashMap<String, Block> {
         }
     }
     function_map
+}
+
+
+// Map type declarations to their parent types
+fn get_custom_types(program: &Program) -> HashMap<String, String> {
+    let mut type_map: HashMap<String, String> = HashMap::new();
+    if let Program::Program(blocks) = program {
+        for block in blocks {
+            if let Block::TypeDefinition(custom_type_name, params, decls) = block {
+                if params.len() > 1 {panic!("custom types with multiple parameters are not yet implemented")}
+                    if let TypedArgument::TypedArgument(typ_str, base_type_name) = params[0].clone() {
+                        match base_type_name.as_str() {
+                            // base types can just be added
+                            "i32" | "f64" => {type_map.insert(custom_type_name.to_owned(), String::from(base_type_name));}
+                            // for custom types, need to iterate through the type map and see if the type exists already
+                            _ => {
+                                if type_map.contains_key(&base_type_name) {
+                                    let base_type = type_map.get(&base_type_name).unwrap();
+                                    type_map.insert(custom_type_name.to_owned(), String::from(base_type));
+                                } else {
+                                    panic!(
+                                        "Base type '{}' for custom type '{}' is not defined",
+                                        base_type_name, custom_type_name
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+
+        }
+    }
+    type_map
 }

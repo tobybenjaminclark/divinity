@@ -22,14 +22,18 @@ fn calculator4() {
                 a + b;
             };
 
-            type newint(c: int) where {
+            type newint(c: i32) where {
                 c > 10,
                 c < 15
             };
 
+            type newint2(c: newint) where {
+                c > 10,
+                c < 15
+            };
 
             fn main () -> i32 {
-                q: i32;
+                q: newint2;
                 w: i32;
                 e: i32;
                 q := 1.6747544;
