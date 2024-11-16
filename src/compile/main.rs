@@ -32,7 +32,7 @@ fn calculator4() {
                 q: i32;
                 w: i32;
                 e: i32;
-                q := 1;
+                q := 1.6747544;
                 w := 2;
                 e := add(q, w);
                 return(e);
@@ -41,6 +41,6 @@ fn calculator4() {
         )
         .unwrap();
     println!("ast: {:#?}", ast);
-    let ret = evaluate_program(*ast);
+    let ret = evaluate_program(*ast, true);
     println!("the program returned: {:?}", ret);
 }

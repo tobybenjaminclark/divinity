@@ -104,6 +104,7 @@ FactorOp: Opcode = {
 Term: Box<Expr> = {
     Identifier,
     Num => Box::new(Expr::Number(<>)),
+    Float => Box::new(Expr::Float(<>)),
     "(" <Expr> ")",
     FunctionCall,
 };
@@ -113,6 +114,11 @@ Term: Box<Expr> = {
 /// Numbers
 Num: i32 = {
     r"-?[0-9]+" => i32::from_str(<>).unwrap()
+};
+
+/// Floating-point Numbers
+Float: f64 = {
+    r"-?[0-9]+\.[0-9]+" => f64::from_str(<>).unwrap()
 };
 
 /// Function Calls

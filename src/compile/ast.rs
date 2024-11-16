@@ -36,6 +36,7 @@
     #[derive(Clone, Debug)]
     pub enum Expr {
         Number(i32),
+        Float(f64),
         Op(Box<Expr>, Opcode, Box<Expr>),
         FunctionCall(String, Vec<Box<Expr>>),
         Conditional(Box<Expr>, Box<Expr>, Box<Expr>),
