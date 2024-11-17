@@ -14,19 +14,49 @@ def replace_identifier(data, source_identifier, new_identifier):
 
 
 def ssa_convert(function):
+    params = function[1]
     statements = function[3]
+    types = {}
+    new_types = {}
 
-    for index, statement in enumerate(statements):
+    for param in params:
+        iden = param["TypedArgument"][0]
+        typ = param["TypedArgument"][1]
+        types[iden] = typ
+
+    index = 0
+    while index < len(statements):
+        statement = statements[index]
         match list(statement.keys())[0]:
+            case "TypeAssignment":
+                iden = statement["TypeAssignment"][0]
+                typ = statement["TypeAssignment"][1]
+                types[iden] = typ
+
             case "Assignment":
                 initial_identifier = statement["Assignment"][0]
                 new_identifier = "_" + initial_identifier
                 statement["Assignment"][0] = new_identifier
+
+                types[new_identifier] = types[initial_identifier]
+
                 # Replace the identifier in the remaining statements
                 statements[index:] = [
                     replace_identifier(s, initial_identifier, new_identifier)
                     for s in statements[index:]
                 ]
+
+                # Insert the test statement before the current statement
+                temp_statement = {"TypeAssignment":[new_identifier, types[initial_identifier]]}
+                statements.insert(index, temp_statement)
+
+                # After inserting, we need to bump the index by 1 to skip over the inserted statement
+                index += 1
+
             case _:
                 pass
-        print(statement)
+
+        # Increment the index to move to the next statement
+        index += 1
+
+    return new_types

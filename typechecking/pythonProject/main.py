@@ -1,8 +1,9 @@
 import z3
 import json
 from ssa import ssa_convert
+from typechecker import typecheck
 
-def typecheck(file_path: str):
+def run(file_path: str):
     file_path = 'program.json'
     try:
         with open(file_path, 'r') as file:
@@ -15,12 +16,14 @@ def typecheck(file_path: str):
     types = list(filter(lambda x: "TypeDefinition" in x.keys(), data["Program"]))
     functions = list(filter(lambda x: "FunctionDefinition" in x.keys(), data["Program"]))
 
+    for t in types:
+        print(t)
+
     for f in functions:
-        ssa_convert(f["FunctionDefinition"])
-
-
+        ssa_types = ssa_convert(f["FunctionDefinition"])
+        typecheck(f["FunctionDefinition"], types, ssa_types)
 
 if __name__ == "__main__":
-    typecheck("program.json")
+    run("program.json")
 
 
