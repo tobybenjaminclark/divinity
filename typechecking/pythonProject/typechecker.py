@@ -107,10 +107,6 @@ def build_expr(expression, solver, symbols, funcs, types):
             # we need to set that x is bound by the return type of the function
             # oh, we also need to check that the input variables are all good.
 
-            # we need to do the contravariant covariant type checking shit here.
-            # i forgot what this actually does tho because it's 2am
-            # TODO: do this ^
-
             # firstly does the function  even exist
             function_name = expression["FunctionCall"][0]
 
@@ -123,6 +119,50 @@ def build_expr(expression, solver, symbols, funcs, types):
                     continue
             if not found:
                 raise Exception(f"Undefined Function {function_name}")
+
+            # we need to do the contravariant covariant type checking shit here.
+            # i forgot what this actually does tho because it's 2am
+            # ok lets do this now, are we giving the function correct arguments?
+            args = current_func["FunctionDefinition"][1]
+            if len(expression["FunctionCall"][1]) != len(args):
+                raise Exception(f"Function Call to {function_name} has {len(args)} arguments, expected only {len(args)}")
+
+            # now let's verify each argument using a constriant
+            for i, a in enumerate(args):
+                try:
+                    typ_iden = a["TypedArgument"][1]
+                except Exception as e:
+                    print(f"A >> {a}")
+                    raise e
+
+                if typ_iden == "i32":
+                    #most generic type, all space is valid.
+                    continue
+                # ok now this can be something more specific
+                found = False
+                try:
+                    for typ in types:
+                        name = typ["TypeDefinition"][0]
+                        if name == typ_iden:
+                            found = True
+                            break
+                        else:
+                            continue
+                except Exception as e:
+                    print(types)
+                    raise e
+                if not found:
+                    raise Exception(f"Unknown Type {typ_iden}")
+                # ok now we have the type definition, we can check it
+                # let's add these refinements to x
+                expr_val = build_expr(expression["FunctionCall"][1][i], solver, symbols, funcs, types)
+                _refinements = typ["TypeDefinition"][2]
+                source = typ["TypeDefinition"][1][0]["TypedArgument"][0]
+                var = z3.Real(names.generate_name())
+                solver.add(var == expr_val)
+                ref = [build_type_expr(refinemnet, solver, symbols, source, var) for refinemnet in _refinements]
+                # since this is a negative space, we need to check if something CAN exist in it (sat is FAIL remember)
+                solver.add(z3.Not((z3.And([r() for r in ref]))))
 
             # we have the string return type, now we need to get
             func_ret_type_iden = current_func["FunctionDefinition"][2]
@@ -261,9 +301,6 @@ def typecheck(function, type_definitions, ssa_types, funcs):
                 solver.add(z3.Not((z3.And([r() for r in ref]))))
 
     if solver.check() == z3.sat:
-        if total_refinements == 0:
-            print(f"FUNCTION {fname} IS GOOD")
-        else:
             print(f"FUNCTION {fname} is BAD!\n")
             model = solver.model()
 
