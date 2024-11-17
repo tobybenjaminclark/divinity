@@ -48,6 +48,8 @@ def build_type_expr(expression, solver, symbols, sub_source, sub_target):
                     return lambda: y >= z
                 case "Lteq":
                     return lambda: y <= z
+                case "Eq":
+                    return lambda: y == z
             return None
         case "FunctionCall":
             x = z3.Real(names.generate_name())
@@ -58,7 +60,7 @@ def build_type_expr(expression, solver, symbols, sub_source, sub_target):
             solver.add(x == 10)  # Simplified for now
             return x
 
-def build_expr(expression, solver, symbols):
+def build_expr(expression, solver, symbols, funcs, types):
     match list(expression.keys())[0]:
         case "Identifier":
             x = z3.Real(names.generate_name())
@@ -72,8 +74,8 @@ def build_expr(expression, solver, symbols):
         case "Op":
             x = z3.Real(names.generate_name())
             try:
-                y = build_expr(expression["Op"][0], solver, symbols)
-                z = build_expr(expression["Op"][2], solver, symbols)
+                y = build_expr(expression["Op"][0], solver, symbols, funcs, types)
+                z = build_expr(expression["Op"][2], solver, symbols, funcs, types)
             except Exception as e:
                 print(expression)
                 raise e
@@ -95,14 +97,69 @@ def build_expr(expression, solver, symbols):
                         solver.add(x == (y >= z))
                     case "Lteq":
                         solver.add(x == (y <= z))
+                    case "Eq":
+                        solver.add(x == (y == z))
                 return x
             except Exception as e:
                 print(expression)
                 raise e
         case "FunctionCall":
-            x = z3.Real(names.generate_name())
-            solver.add(x == 10)  # Simplified for now
-            return x
+            # we need to set that x is bound by the return type of the function
+            # oh, we also need to check that the input variables are all good.
+
+            # we need to do the contravariant covariant type checking shit here.
+            # i forgot what this actually does tho because it's 2am
+            # TODO: do this ^
+
+            # firstly does the function  even exist
+            function_name = expression["FunctionCall"][0]
+
+            found = False
+            for current_func in funcs:
+                if function_name == current_func["FunctionDefinition"][0]:
+                    found = True
+                    break
+                else:
+                    continue
+            if not found:
+                raise Exception(f"Undefined Function {function_name}")
+
+            # we have the string return type, now we need to get
+            func_ret_type_iden = current_func["FunctionDefinition"][2]
+
+            # great it's just a number
+            if func_ret_type_iden == "i32":
+                x = z3.Real(names.generate_name())
+                return x
+
+            # we must find the corresponding type declaration
+            found = False
+            try:
+                for typ in types:
+                    name = typ["TypeDefinition"][0]
+                    if name == func_ret_type_iden:
+                        found = True
+                        break
+                    else:
+                        continue
+            except Exception as e:
+                print(types)
+                raise e
+
+            if not found:
+                raise Exception(f"Unknown Type {t}")
+
+            # ok we have found the type definition it is `typ`
+            # now we must access it's refinements and build these into z3
+            _refinements = typ["TypeDefinition"][2]
+
+            # let's add these refinements to x
+            source = typ["TypeDefinition"][1][0]["TypedArgument"][0]
+            var = z3.Real(names.generate_name())
+            ref = [build_type_expr(refinemnet, solver, symbols, source, var) for refinemnet in _refinements]
+            solver.add((z3.And([r() for r in ref])))
+            return var
+
         case "Conditional":
             x = z3.Real(names.generate_name())
             solver.add(x == 10)  # Simplified for now
@@ -112,7 +169,7 @@ def build_expr(expression, solver, symbols):
             raise Exception()
 
 
-def typecheck(function, type_definitions, ssa_types):
+def typecheck(function, type_definitions, ssa_types, funcs):
     symbols = {}
     VALID_TYPES = ([a["TypeDefinition"][0] for a in type_definitions])
     VALID_TYPES.append("i32")
@@ -158,7 +215,7 @@ def typecheck(function, type_definitions, ssa_types):
                 iden = statement["Assignment"][0]
                 expr = statement["Assignment"][1]
 
-                expr_var = build_expr(expr, solver, symbols)
+                expr_var = build_expr(expr, solver, symbols, funcs, type_definitions)
                 solver.add(symbols[iden] == expr_var)
 
             case _:
