@@ -125,9 +125,12 @@ def typecheck(function, type_definitions, ssa_types):
     params = function[1]
     ret_type = function[2]
     statements = function[3]
+    total_refinements = 0;
+    param_idens = []
 
     for param in params:
         iden = param["TypedArgument"][0]
+        param_idens.append(iden)
         typ = param["TypedArgument"][1]
 
         if typ not in VALID_TYPES:
@@ -158,12 +161,10 @@ def typecheck(function, type_definitions, ssa_types):
                 expr_var = build_expr(expr, solver, symbols)
                 solver.add(symbols[iden] == expr_var)
 
-
-
             case _:
                 pass
 
-    # Ok now we need to add the negative categories for the given types.
+    # Ok now we need to add the negative categories for the given types
     for k, v in symbols.items():
         t = real_local_types[k]
         #print(f"{k} - {v} - {t}")
@@ -191,30 +192,32 @@ def typecheck(function, type_definitions, ssa_types):
             # ok we have found the type definition it is `typ`
             # now we must access it's refinements and build these into z3
             _refinements = typ["TypeDefinition"][2]
+            total_refinements += len(_refinements)
             #print(_refinements)
             source = typ["TypeDefinition"][1][0]["TypedArgument"][0]
             #print(source)
             ref = [build_type_expr(refinemnet, solver, symbols, source, symbols[k]) for refinemnet in _refinements]
 
-            solver.add(z3.Not(z3.And([r() for r in ref])))
+            if k in param_idens:
+                solver.add((z3.And([r() for r in ref])))
+            else:
+                solver.add(z3.Not((z3.And([r() for r in ref]))))
 
     if solver.check() == z3.sat:
-        print(f"Model for {fname} is sat!\n")
-        model = solver.model()
+        if total_refinements == 0:
+            print(f"FUNCTION {fname} IS GOOD")
+        else:
+            print(f"FUNCTION {fname} is BAD!\n")
+            model = solver.model()
 
-        # Iterate over all the declarations in the model and print their values
-        for d in model.decls():
-            value = model[d]
-            print(f"    -   {d.name()} = {value}")
+            # Iterate over all the declarations in the model and print their values
+            for d in model.decls():
+                value = model[d]
+                print(f"    -   {d.name()} = {value}")
+
+            for index, constraint in enumerate(solver.assertions()):
+                print(f" {index} :: {constraint}")
 
     elif solver.check() == z3.unsat:
-        print(f"Model for {fname} is not sat!\n")
+        print(f"FUNCTION {fname} IS GOOD")
         model = None
-
-        # Show the unsat core
-        unsat_core = solver.unsat_core()
-        print("Unsat Core:")
-        for clause in unsat_core:
-            print(clause)
-
-    return model
