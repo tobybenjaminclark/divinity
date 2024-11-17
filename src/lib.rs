@@ -1,30 +1,17 @@
 use std::any::Any;
 use std::fs;
-use crate::ast::*;
 use lalrpop_util::lalrpop_mod;
-use interpreter::*;
 use std::fs::File;
 use std::io::Write;
+use crate::compile::ast::Program;
+use crate::compile::interpreter::{evaluate_program, Var};
 
 // Import the ast module
-mod ast;
-mod interpreter;
+mod compile;
 
 lalrpop_mod!(pub calculator1);
 
-fn main() {
-    calculator4();
-    return;
-}
-
-fn calculator4() {
-
-    // Specify the file path
-    let file_path = "program.div";
-
-    // Read the file content to a String
-    let content = fs::read_to_string(file_path).unwrap();
-
+pub fn calculator4(content: String) -> Var {
     let ast: Box<Program> = calculator1::ProgramParser::new()
         .parse(content.as_str()
         )
@@ -42,5 +29,5 @@ fn calculator4() {
 
     let ret = evaluate_program(*ast, false);
 
-    println!("Result: {}", ret);
+    return ret;
 }

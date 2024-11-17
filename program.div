@@ -26,6 +26,7 @@ fn ssa_test(a:i32) -> i32 {
 
 fn main () -> i32 {
     a: int2;
-    a := add(15, 17);
+    getint(b);
+    a := add(15, b);
     return(a)
 };

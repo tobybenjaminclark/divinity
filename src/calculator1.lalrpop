@@ -1,7 +1,7 @@
 use std::str::FromStr;
-use crate::ast::{Expr, Opcode, Statement, Block, TypedArgument, Program};
-
+use crate::compile::ast::{Program, Block, TypedArgument, Statement, Expr, Opcode, };
 grammar;
+
 
 pub Program: Box<Program> = {
     <a: Semicolon<Block>> => Box::new(Program::Program(a))

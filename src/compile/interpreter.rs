@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::{fmt, io};
 use std::ops::Mul;
-use crate::ast::{Block, Expr, Opcode, Program, Statement, TypedArgument};
+use super::ast::{Block, Expr, Opcode, Program, Statement, TypedArgument};
 
 
 #[derive(Debug, Clone)]
