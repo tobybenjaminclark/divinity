@@ -347,10 +347,11 @@ def typecheck(function, type_definitions, ssa_types, funcs, lines):
              lines += f"  ↪ {index} :: {constraint}\n"
         lines += "\n"
 
+        return False, lines
         raise Exception(f"Function {fname} is not 100% safe!")
 
 
     elif solver.check() == z3.unsat:
         lines += f"Function `{fname}` verified successfully.\n\n"
         model = None
-        return True
+        return True, lines

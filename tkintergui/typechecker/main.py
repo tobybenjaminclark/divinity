@@ -26,7 +26,7 @@ def run(file_path: str, output_panel: OutputPanel):
         lines += f"Checking {f['FunctionDefinition'][0]}\n"
         ssa_types = ssa_convert(f["FunctionDefinition"])
         try:
-            typecheck(f["FunctionDefinition"], types, ssa_types, functions, lines)
+            success, lines = typecheck(f["FunctionDefinition"], types, ssa_types, functions, lines)
         except Exception as e:
             retval = False
         

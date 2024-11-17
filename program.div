@@ -1,41 +1,31 @@
-type int1(g: i32) where {
-    g >= 20,
-    g <= 40
+type int50(g: i32) where {
+    g == 50,
 };
 
-type int2(c: i32) where {
-    c > 10,
-    c < 20
+type intUnder40(g: i32) where {
+    g < 40,
 };
 
-fn fail_test_one() -> i32 {
-    a: int1;
-    a := 50;
+fn test_if_else() -> i32 {
+    a: int50;
+    a := if 1 then 50 else 0;
+    return(12)
 };
 
-fn fail_text_two() -> i32 {
-    a: int1;
-    a := 25 * 3;
+fn test_if_else_fail() -> i32 {
+    a: int50;
+    a := if 1 then 0 else 50;
+    return(12)
 };
 
-fn add (a:int1, b:int1) -> int2 {
-    return(a + b)
+
+fn test_if_else_fail2(a: i32) -> i32 {
+    b: int50;
+    b := if a then ;
+    return(12)
 };
 
-fn ssa_test(a:i32) -> i32 {
-    a1: i32;
-    a2: i32;
-    a3: i32;
-
-    a := a1;
-    a := a2;
-    a := a3;
-    a := 5;
-    return(a)
-};
 
 fn main () -> i32 {
-    a: int2;
-    a := add(15, 15);
-    return(a)
+    return(1)
 };

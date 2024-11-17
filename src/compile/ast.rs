@@ -53,6 +53,7 @@ pub enum Opcode {
     Lt,
     Gteq,
     Lteq,
+    Eq,
 }
 
 // Function to convert an instance of Program to JSON string

@@ -50,7 +50,6 @@ pub TypeAssignment: Statement = {
 }
 
 
-
 /// Expressions
 pub Expr: Box<Expr> = {
     IfExpr,
@@ -78,7 +77,9 @@ ExprOp: Opcode = {
     "<" => Opcode::Lt,
     ">" => Opcode::Gt,
     "<=" => Opcode::Lteq,
-    ">=" => Opcode::Gteq
+    ">=" => Opcode::Gteq,
+    "==" => Opcode::Eq
+
 };
 
 

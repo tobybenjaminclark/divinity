@@ -21,7 +21,7 @@ fn test_if_else_fail() -> i32 {
 
 fn test_if_else_fail2(a: i32) -> i32 {
     b: int50;
-    b := if a then 1 else 0;
+    b := if a then 1 else 20;
     return(12)
 };
 
