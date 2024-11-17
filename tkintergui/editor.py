@@ -15,3 +15,8 @@ class CodeEditor(tk.Frame):
 
     def clear_code(self):
         self.editor.delete("1.0", tk.END)
+
+    def set_text(self, text):
+        """Sets the content of the editor to the provided text."""
+        self.editor.delete("1.0", tk.END)  # Clear the current content
+        self.editor.insert(tk.END, text)    # Insert the new text
