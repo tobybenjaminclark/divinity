@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/divinity/static/css/main.36003601.css",
+    "main.js": "/divinity/static/js/main.bc48dd76.js",
+    "static/js/453.d15a742f.chunk.js": "/divinity/static/js/453.d15a742f.chunk.js",
+    "index.html": "/divinity/index.html",
+    "main.36003601.css.map": "/divinity/static/css/main.36003601.css.map",
+    "main.bc48dd76.js.map": "/divinity/static/js/main.bc48dd76.js.map",
+    "453.d15a742f.chunk.js.map": "/divinity/static/js/453.d15a742f.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.36003601.css",
+    "static/js/main.bc48dd76.js"
+  ]
+}

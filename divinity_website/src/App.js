@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Controlled as CodeMirror } from 'react-codemirror2';
-import 'codemirror/lib/codemirror.css';  // You can import the styles here
-import 'codemirror/theme/dracula.css';  // Import the theme you want
-
-// You can import additional modes for different languages
+import 'codemirror/lib/codemirror.css'; 
+import 'codemirror/theme/dracula.css'; 
 import 'codemirror/mode/javascript/javascript';
 
 function App() {
