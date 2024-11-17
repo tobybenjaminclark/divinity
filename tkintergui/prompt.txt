@@ -1,0 +1,123 @@
+Objective:
+
+You are tasked with filling in the missing parts of a program written in a custom programming language, denoted by holes represented by the ? symbol. Your task is to ensure that the program remains syntactically and semantically correct and consistent with the rest of the provided code. Only the holes marked by ? should be modified, and no other part of the program should be changed. You must infer the correct values or structures based on the context provided.
+
+Language Overview:
+This custom language uses a combination of types, functions, conditionals, and assignments. The program structure includes types, functions, and statements. A type is a named definition that specifies conditions on a given parameter. A function is a block that performs operations and can return a value. The hole marked by ? represents an incomplete part of the program that needs to be filled in.
+
+Program Structure:
+Program: Contains a list of blocks (either function definitions or type definitions).
+Block: A function definition or a type definition.
+Typed Argument: A variable with a specific type (e.g., x: i32).
+Statement: Can be an assignment, a type assignment, or an expression (e.g., x := y + 2).
+Expression (Expr): Could be a number, float, operation, conditional, function call, or identifier.
+Opcode: Represents arithmetic operations or comparisons (e.g., addition, subtraction, greater than, etc.).
+Key Constructs:
+Type Definitions: These define constraints on values of a specific type. For example:
+
+type int50(g: i32) where {
+    g == 50,
+};
+Function Definitions: Functions in the language may take arguments, execute some logic, and return a value. For example:
+
+fn test_if_else() -> i32 {
+    a: int50;
+    a := if 1 then 50 else 0;
+    return(12)
+};
+Conditionals: You will encounter if expressions that determine a value based on conditions. They use the syntax if <condition> then <expression> else <expression>.
+
+Instructions for Filling Holes:
+Focus on the Holes: The holes in the code are marked by the ? symbol. Your task is to replace only these holes. No other part of the program should be modified.
+
+Understand the Context: Each hole appears in the context of a larger expression, statement, or function definition. You need to infer the correct value or structure for the hole based on the surrounding code.
+
+For example, if a hole appears inside an if expression, you should infer what the condition and values in the then and else branches should be.
+If a hole appears in a function definition, determine the missing parameter or function body based on the function signature and other parts of the code.
+Types and Variables:
+
+Ensure that the types for variables and function arguments are consistent. If a type is defined as int50, make sure that any variable assigned to it adheres to its condition (e.g., g == 50).
+If a hole is within a function call, ensure that the correct arguments are passed based on the function's signature and the context of the code.
+Conditionals:
+
+For holes inside if expressions, consider the conditions and return values in the then and else branches. If the if expression involves a condition like g == 50, you might need to fill in the condition and corresponding expressions.
+Pay attention to the types expected from the if expression, ensuring the correct type is returned (e.g., i32 in the case of i32 function return types).
+Assignments:
+
+For variable assignments, ensure that the left-hand side matches the expected type, and the right-hand side should be a valid expression that can be assigned to that type.
+If the variable type is defined (e.g., int50 or intUnder40), ensure that the assigned value adheres to the type’s constraints.
+Function Definitions:
+
+Ensure that any missing function return values are inferred based on the expected return type.
+For functions that are not complete, infer any missing body expressions or parameters based on the function’s signature and context.
+Example Input with Holes:
+Below is an incomplete program with holes represented by ?. Your task is to fill in these holes based on the instructions provided:
+
+type int50(g: i32) where {
+    g == 50,
+};
+
+type intUnder40(g: i32) where {
+    g < 40,
+};
+
+fn test_if_else() -> i32 {
+    a: int50;
+    a := if ? then 50 else 0;
+    return(12)
+};
+
+fn test_if_else_fail() -> i32 {
+    a: int50;
+    a := if ? then 0 else 50;
+    return(12)
+};
+
+fn test_if_else_fail2(a: i32) -> i32 {
+    b: int50;
+    b := if a then 50 else 49;
+    return(12)
+};
+
+fn main () -> i32 {
+    return(1)
+};
+Expected Output:
+After filling in the holes, the program should be complete and syntactically correct. For example, the hole in the first function test_if_else() might be filled with a condition such as g == 50, and the second function might require a condition like g < 40 based on the type definition.
+
+text
+Copy code
+type int50(g: i32) where {
+    g == 50,
+};
+
+type intUnder40(g: i32) where {
+    g < 40,
+};
+
+fn test_if_else() -> i32 {
+    a: int50;
+    a := if g == 50 then 50 else 0;
+    return(12)
+};
+
+fn test_if_else_fail() -> i32 {
+    a: int50;
+    a := if g < 40 then 0 else 50;
+    return(12)
+};
+
+fn test_if_else_fail2(a: i32) -> i32 {
+    b: int50;
+    b := if a then 50 else 49;
+    return(12)
+};
+
+fn main () -> i32 {
+    return(1)
+};
+Note: Ensure that your response follows the structure of the program closely, and only modify the parts marked by ?. The program must remain syntactically correct and semantically valid based on the type constraints and logic provided in the context.
+
+The following code has certain "holes" (areas that need completion or fixing). Please fill in those holes and give back the full code. Complete the following code. Fill in the holes denoted by ? with correct values based on the context, ensuring the program remains syntactically and semantically correct. Only replace the ? symbols; do not modify any other part of the code. Return only the completed code; do not include any additional text in your response.
+
+Code to complete:

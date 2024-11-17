@@ -3,6 +3,7 @@ from tkinter import filedialog
 from editor import CodeEditor
 from output import OutputPanel
 from run_button import run_code  # Import the function for running the code
+from divinity_button import divine_code
 
 class CodeEditorApp:
     def __init__(self, root):
@@ -30,7 +31,7 @@ class CodeEditorApp:
         self.verify_button.grid(row=0, column=0, padx=10, pady=5)
 
         # Add the "Divinity" button
-        self.divinity_button = tk.Button(self.button_frame, text="Divinity", command=self.dummy_action,
+        self.divinity_button = tk.Button(self.button_frame, text="Divinity", command=lambda:divine_code(self.editor_frame, self.output_frame),
                                         bg="#6f6f6f", fg="white", font=("Helvetica", 12), relief="flat")
         self.divinity_button.grid(row=0, column=1, padx=10, pady=5)
 
@@ -48,6 +49,7 @@ class CodeEditorApp:
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_rowconfigure(1, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
+
 
     def run_code(self):
         # Use the run_code function imported from run_button.py

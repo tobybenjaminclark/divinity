@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 import subprocess
+import re
 
 def run_code(editor_frame, output_frame, rust_exe_path="input/divinity.exe"):
     # Get code from the editor frame (textbox)
@@ -13,6 +14,9 @@ def run_code(editor_frame, output_frame, rust_exe_path="input/divinity.exe"):
 
 def execute_code(code, output_frame, rust_exe_path):
     try:
+        # Remove comments wrapped in /* */
+        code = remove_comments(code)
+
         # Ensure the Rust executable exists
         if not os.path.exists(rust_exe_path):
             output_frame.show_output(f"Error: {rust_exe_path} not found.")
@@ -34,3 +38,9 @@ def execute_code(code, output_frame, rust_exe_path):
 
     except Exception as e:
         output_frame.show_output(f"Execution error: {str(e)}")
+
+def remove_comments(code):
+    """Remove comments wrapped in /* */."""
+    # Regex to match anything between /* and */
+    code_without_comments = re.sub(r'/\*.*?\*/', '', code, flags=re.DOTALL)
+    return code_without_comments
