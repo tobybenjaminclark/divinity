@@ -77,7 +77,6 @@ def build_expr(expression, solver, symbols, funcs, types):
                 y = build_expr(expression["Op"][0], solver, symbols, funcs, types)
                 z = build_expr(expression["Op"][2], solver, symbols, funcs, types)
             except Exception as e:
-                print(expression)
                 raise e
             try:
                 match expression["Op"][1]:
@@ -101,8 +100,15 @@ def build_expr(expression, solver, symbols, funcs, types):
                         solver.add(x == (y == z))
                 return x
             except Exception as e:
-                print(expression)
                 raise e
+        case "Conditional":
+            lst = expression["Conditional"]
+            x = z3.Real(names.generate_name())
+            a = build_expr(lst[0], solver, symbols, funcs, types)
+            b = build_expr(lst[1], solver, symbols, funcs, types)
+            c = build_expr(lst[2], solver, symbols, funcs, types)
+            solver.add(x == z3.If(a > 0, b, c))
+            return x
         case "FunctionCall":
             # we need to set that x is bound by the return type of the function
             # oh, we also need to check that the input variables are all good.
@@ -132,7 +138,6 @@ def build_expr(expression, solver, symbols, funcs, types):
                 try:
                     typ_iden = a["TypedArgument"][1]
                 except Exception as e:
-                    print(f"A >> {a}")
                     raise e
 
                 if typ_iden == "i32":
@@ -149,7 +154,6 @@ def build_expr(expression, solver, symbols, funcs, types):
                         else:
                             continue
                 except Exception as e:
-                    print(types)
                     raise e
                 if not found:
                     raise Exception(f"Unknown Type {typ_iden}")
@@ -183,7 +187,6 @@ def build_expr(expression, solver, symbols, funcs, types):
                     else:
                         continue
             except Exception as e:
-                print(types)
                 raise e
 
             if not found:
@@ -199,13 +202,7 @@ def build_expr(expression, solver, symbols, funcs, types):
             ref = [build_type_expr(refinemnet, solver, symbols, source, var) for refinemnet in _refinements]
             solver.add((z3.And([r() for r in ref])))
             return var
-
-        case "Conditional":
-            x = z3.Real(names.generate_name())
-            solver.add(x == 10)  # Simplified for now
-            return x
         case _:
-            print(expression)
             raise Exception()
 
 
@@ -240,8 +237,6 @@ def typecheck(function, type_definitions, ssa_types, funcs):
         symbols[k] = z3.Real(k)
 
     for index, statement in enumerate(statements):
-        print(fname)
-        print(f" -> {statement}")
         match list(statement.keys())[0]:
             case "TypeAssignment":
                 iden = statement["TypeAssignment"][0]
@@ -292,9 +287,7 @@ def typecheck(function, type_definitions, ssa_types, funcs):
                     var = z3.Real(names.generate_name())
                     _refinements = typ["TypeDefinition"][2]
                     total_refinements += len(_refinements)
-                    # print(_refinements)
                     source = typ["TypeDefinition"][1][0]["TypedArgument"][0]
-                    # print(source)
                     ref = [build_type_expr(refinemnet, solver, symbols, source, var) for refinemnet in
                            _refinements]
                     solver.add(z3.Not((z3.And([r() for r in ref]))))
@@ -305,7 +298,6 @@ def typecheck(function, type_definitions, ssa_types, funcs):
     # Ok now we need to add the negative categories for the given types
     for k, v in symbols.items():
         t = real_local_types[k]
-        #print(f"{k} - {v} - {t}")
 
         # ok this is just a number.
         if t == "i32":
@@ -356,3 +348,6 @@ def typecheck(function, type_definitions, ssa_types, funcs):
     elif solver.check() == z3.unsat:
         print(f"FUNCTION {fname} IS GOOD")
         model = None
+
+        for index, constraint in enumerate(solver.assertions()):
+            print(f" {index} :: {constraint}")

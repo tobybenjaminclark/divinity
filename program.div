@@ -6,16 +6,26 @@ type intUnder40(g: i32) where {
     g < 40,
 };
 
-fn takesInt50(x: int50) -> i32 {
-    return(5)
+fn test_if_else() -> i32 {
+    a: int50;
+    a := if 1 then 50 else 0;
+    return(12)
 };
 
-fn makeint50() -> int50 {
-    return(30);
+fn test_if_else_fail() -> i32 {
+    a: int50;
+    a := if 1 then 0 else 50;
+    return(12)
 };
+
+
+fn test_if_else_fail2(a: i32) -> i32 {
+    b: int50;
+    b := if a then 50 else 49;
+    return(12)
+};
+
 
 fn main () -> i32 {
-    a: i32;
-    a := takesInt50(50);
-    return(a)
+    return(1)
 };

@@ -16,18 +16,50 @@ def run(file_path: str):
     types = list(filter(lambda x: "TypeDefinition" in x.keys(), data["Program"]))
     functions = list(filter(lambda x: "FunctionDefinition" in x.keys(), data["Program"]))
 
-    for t in types:
-        print(t)
-
-    for f in functions:
-        print(f)
-
     for f in functions:
         print(f"Checking {f["FunctionDefinition"][0]}")
         ssa_types = ssa_convert(f["FunctionDefinition"])
         typecheck(f["FunctionDefinition"], types, ssa_types, functions)
+        print("\n\n")
 
 if __name__ == "__main__":
     run("program.json")
 
+
+
+
+
+"""
+type int50(g: i32) where {
+    g == 50,
+};
+
+type intUnder40(g: i32) where {
+    g < 40,
+};
+
+fn test_if_else() -> i32 {
+    a: int50;
+    a := if 1 then 50 else 0;
+    return(12)
+};
+
+fn test_if_else_fail() -> i32 {
+    a: int50;
+    a := if 1 then 0 else 50;
+    return(12)
+};
+
+
+fn test_if_else_fail2(a: i32) -> i32 {
+    b: int50;
+    b := if a then 50 else 49;
+    return(12)
+};
+
+
+fn main () -> i32 {
+    return(1)
+};
+"""
 
