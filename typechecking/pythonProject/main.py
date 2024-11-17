@@ -20,6 +20,7 @@ def run(file_path: str):
         print(t)
 
     for f in functions:
+        print(f"Checking {f["FunctionDefinition"][0]}")
         ssa_types = ssa_convert(f["FunctionDefinition"])
         typecheck(f["FunctionDefinition"], types, ssa_types)
 
