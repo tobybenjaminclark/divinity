@@ -6,12 +6,16 @@ type intUnder40(g: i32) where {
     g < 40,
 };
 
-fn takesInt50(a: int50) -> i32 {
-    return(50);
-}
+fn takesInt50(x: int50) -> i32 {
+    return(5)
+};
+
+fn makeint50() -> int50 {
+    return(30);
+};
 
 fn main () -> i32 {
     a: i32;
-    a := takesInt50(25 * 3);
+    a := takesInt50(50);
     return(a)
 };

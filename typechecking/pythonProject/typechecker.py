@@ -210,6 +210,7 @@ def build_expr(expression, solver, symbols, funcs, types):
 
 
 def typecheck(function, type_definitions, ssa_types, funcs):
+    returns_well = False
     symbols = {}
     VALID_TYPES = ([a["TypeDefinition"][0] for a in type_definitions])
     VALID_TYPES.append("i32")
@@ -258,6 +259,46 @@ def typecheck(function, type_definitions, ssa_types, funcs):
                 expr_var = build_expr(expr, solver, symbols, funcs, type_definitions)
                 solver.add(symbols[iden] == expr_var)
 
+            case "Expr":
+                expr = statement["Expr"]
+                func = expr["FunctionCall"]
+                if(len(func[1]) != 1):
+                    raise Exception("You can only return 1 thing from a function in Divinity.")
+                if(func[0] == "return"):
+                    returns_well = True
+                    # we know return type is rest_type
+                    # if this is i32, then this is the most generic and everything is valid!
+                    if ret_type == "i32":
+                        continue
+                    else:
+                        # we must find the corresponding type declaration
+                        found = False
+                        for typ in type_definitions:
+                            name = typ["TypeDefinition"][0]
+                            if name == ret_type:
+                                found = True
+                                break
+                            else:
+                                continue
+                        if not found:
+                            raise Exception(f"Unknown Type {ret_type}")
+                        # we got the type
+
+                    return_expr = func[1][0]
+                    return_expr_var = build_expr(return_expr, solver, symbols, funcs, type_definitions)
+
+                    # Okay we have a return value!
+                    # We need to add some sort of constraint to see if the variable can escape this space.
+                    var = z3.Real(names.generate_name())
+                    _refinements = typ["TypeDefinition"][2]
+                    total_refinements += len(_refinements)
+                    # print(_refinements)
+                    source = typ["TypeDefinition"][1][0]["TypedArgument"][0]
+                    # print(source)
+                    ref = [build_type_expr(refinemnet, solver, symbols, source, var) for refinemnet in
+                           _refinements]
+                    solver.add(z3.Not((z3.And([r() for r in ref]))))
+                    solver.add(return_expr_var == var)
             case _:
                 pass
 
