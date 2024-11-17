@@ -24,4 +24,4 @@ Cargo.lock
 
 /target
 
-node_modules/
+node_modules
