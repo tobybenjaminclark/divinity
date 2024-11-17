@@ -1,5 +1,5 @@
 import z3
-from unique import UniqueNameGenerator
+from typechecker.unique import UniqueNameGenerator
 import types
 
 # Example usage
@@ -206,7 +206,7 @@ def build_expr(expression, solver, symbols, funcs, types):
             raise Exception()
 
 
-def typecheck(function, type_definitions, ssa_types, funcs):
+def typecheck(function, type_definitions, ssa_types, funcs, lines):
     returns_well = False
     symbols = {}
     VALID_TYPES = ([a["TypeDefinition"][0] for a in type_definitions])
@@ -337,19 +337,20 @@ def typecheck(function, type_definitions, ssa_types, funcs):
         model = solver.model()
 
         # Iterate over all the declarations in the model and print their values
-        print("Model Values")
+        lines += f"Model Values for {fname}: (here, TEMP refers to expression values)\n"
         for d in model.decls():
             value = model[d]
-            print(f" ↪ {d.name()} = {value}")
+            lines += f"   ↪ {d.name()} = {value}\n"
 
-        print("Constraints")
+        lines += f"Constraints for {fname}:\n"
         for index, constraint in enumerate(solver.assertions()):
-            print(f" ↪ {index} :: {constraint}")
+             lines += f"  ↪ {index} :: {constraint}\n"
+        lines += "\n"
 
         raise Exception(f"Function {fname} is not 100% safe!")
 
 
     elif solver.check() == z3.unsat:
-        print(f"FUNCTION {fname} IS GOOD")
+        lines += f"Function `{fname}` verified successfully.\n\n"
         model = None
         return True

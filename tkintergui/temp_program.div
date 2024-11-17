@@ -1,0 +1,31 @@
+type int50(g: i32) where {
+    g == 50,
+};
+
+type intUnder40(g: i32) where {
+    g < 40,
+};
+
+fn test_if_else() -> i32 {
+    a: int50;
+    a := if 1 then 50 else 0;
+    return(12)
+};
+
+fn test_if_else_fail() -> i32 {
+    a: int50;
+    a := if 1 then 0 else 50;
+    return(12)
+};
+
+
+fn test_if_else_fail2(a: i32) -> i32 {
+    b: int50;
+    b := if a then 1 else 0;
+    return(12)
+};
+
+
+fn main () -> i32 {
+    return(1)
+};

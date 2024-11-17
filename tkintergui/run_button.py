@@ -27,7 +27,8 @@ def execute_code(code, output_frame, rust_exe_path):
             temp_file.write(code)
         
         # Run the compiled Rust binary with subprocess and the temporary file
-        result = subprocess.run([rust_exe_path, "temp_program.div"], capture_output=True, text=True)
+        _ = subprocess.run([rust_exe_path, "ast", "temp_program.div"], capture_output=True, text=True)
+        result = subprocess.run([rust_exe_path, "run", "ast_output.json"], capture_output=True, text=True)
         
         # Capture the output or error
         output = result.stdout if result.returncode == 0 else result.stderr
