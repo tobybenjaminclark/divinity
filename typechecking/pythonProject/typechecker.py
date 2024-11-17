@@ -334,20 +334,22 @@ def typecheck(function, type_definitions, ssa_types, funcs):
                 solver.add(z3.Not((z3.And([r() for r in ref]))))
 
     if solver.check() == z3.sat:
-            print(f"FUNCTION {fname} is BAD!\n")
-            model = solver.model()
+        model = solver.model()
 
-            # Iterate over all the declarations in the model and print their values
-            for d in model.decls():
-                value = model[d]
-                print(f"    -   {d.name()} = {value}")
+        # Iterate over all the declarations in the model and print their values
+        print("Model Values")
+        for d in model.decls():
+            value = model[d]
+            print(f" ↪ {d.name()} = {value}")
 
-            for index, constraint in enumerate(solver.assertions()):
-                print(f" {index} :: {constraint}")
+        print("Constraints")
+        for index, constraint in enumerate(solver.assertions()):
+            print(f" ↪ {index} :: {constraint}")
+
+        raise Exception(f"Function {fname} is not 100% safe!")
+
 
     elif solver.check() == z3.unsat:
         print(f"FUNCTION {fname} IS GOOD")
         model = None
-
-        for index, constraint in enumerate(solver.assertions()):
-            print(f" {index} :: {constraint}")
+        return True
