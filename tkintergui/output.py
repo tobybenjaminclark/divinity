@@ -1,12 +1,13 @@
 # output.py
 import tkinter as tk
+from tkinter import DISABLED, scrolledtext
 
 class OutputPanel(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
         
         # Create a Text widget for displaying output
-        self.output_text = tk.Text(self, wrap=tk.WORD, width=80, height=10, state=tk.DISABLED)
+        self.output_text = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=80, height=20, state=DISABLED)
         self.output_text.grid(row=0, column=0)
 
     def show_output(self, output):
