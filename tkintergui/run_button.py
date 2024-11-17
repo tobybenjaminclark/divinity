@@ -1,26 +1,36 @@
-# run_button.py
+import os
 import tkinter as tk
 import subprocess
 
-class RunButton(tk.Button):
-    def __init__(self, master, editor_frame, output_frame):
-        self.editor_frame = editor_frame
-        self.output_frame = output_frame
-        super().__init__(master, text="Run Code", command=self.run_code)
+def run_code(editor_frame, output_frame, rust_exe_path="input/divinity.exe"):
+    # Get code from the editor frame (textbox)
+    code = editor_frame.get_code()
+    if code.strip():
+        output_frame.clear_output()
+        execute_code(code, output_frame, rust_exe_path)
+    else:
+        output_frame.show_output("Error: No code to run.")
+
+def execute_code(code, output_frame, rust_exe_path):
+    try:
+        # Ensure the Rust executable exists
+        if not os.path.exists(rust_exe_path):
+            output_frame.show_output(f"Error: {rust_exe_path} not found.")
+            return
         
-    def run_code(self):
-        code = self.editor_frame.get_code()
-        if code.strip():
-            self.output_frame.clear_output()
-            self.execute_code(code)
-        else:
-            self.output_frame.show_output("Error: No code to run.")
-    
-    def execute_code(self, code):
-        try:
-            # For demo purposes, we will run Python code via subprocess
-            result = subprocess.run(['python3', '-c', code], capture_output=True, text=True)
-            output = result.stdout if result.returncode == 0 else result.stderr
-            self.output_frame.show_output(output)
-        except Exception as e:
-            self.output_frame.show_output(f"Execution error: {str(e)}")
+        # Create a temporary file to store the code
+        with open("temp_program.div", "w") as temp_file:
+            temp_file.write(code)
+        
+        # Run the compiled Rust binary with subprocess and the temporary file
+        result = subprocess.run([rust_exe_path, "temp_program.div"], capture_output=True, text=True)
+        
+        # Capture the output or error
+        output = result.stdout if result.returncode == 0 else result.stderr
+        output_frame.show_output(output)
+
+        # Optionally delete the temporary file after execution
+        os.remove("temp_program.div")
+
+    except Exception as e:
+        output_frame.show_output(f"Execution error: {str(e)}")
