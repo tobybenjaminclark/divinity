@@ -14,7 +14,7 @@
     🪄 Dependently typed toy language with holes developed in rust for HackSheffield 9! Developed using Rust, Larlpop and Z3!
     <br />
     <br />
-    <a href="https://devpost.com/software/divinity">View Devpost</a>
+    <a href="https://devpost.com/software/divine-intellect-compiler">View Devpost</a>
     ·
     <a href="https://github.com//tobybenjaminclark/divinity/issues">Report Bug</a>
     ·
@@ -33,7 +33,7 @@ The key feature of Divine Intellect is its ability to **verify** that the code g
 
 By combining LLM support with formal verification, the Divine Intellect Compiler allows you to generate code while making sure it meets the necessary requirements and constraints, offering an extra level of assurance that the code is working as expected.
 
-Infact, the Divine Intellect Compiler is inspired by Terry Davis' famous [TempleOS](https://en.wikipedia.org/wiki/TempleOS) system, and surrounding projects such as [HolyC](https://holyc-lang.com/).
+Infact, the Divine Intellect Compiler is inspired by Terry Davis' famous [TempleOS](https://en.wikipedia.org/wiki/TempleOS) system, and surrounding projects such as [HolyC](https://holyc-lang.com/), but with a verification twist.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -41,7 +41,7 @@ Infact, the Divine Intellect Compiler is inspired by Terry Davis' famous [Temple
 
 
 <!-- USAGE EXAMPLES -->
-## How it works!
+## Internals & Architecture
 
 <p align="center">
   <img src="assets/compiler_diagram.png" width="910" height="348">
@@ -75,7 +75,7 @@ The AST is then interpreted directly using a bespoke interpreter written in Rust
 
 <!-- CONTRIBUTING -->
 ## Contributing
-Since the project was born out of a 24-hour hackathon, there are countless issues and bugs - note the lack of installation guidance here as an example. If, despite the complete lack of documentation, you wish to contribute to Divine Intellect Compiler or Divinity, please feel free to create a feature branch or raise an issue! If you encounter any big issues, or get really stuck - feel free to contact whoever you think is most relevant to the issue you are encountering. 
+Since the project was born out of a 24-hour hackathon, there are going to be issues and bugs - note the lack of installation guidance here as an example. If you wish to contribute to Divine Intellect Compiler or Divinity, please feel free to create a feature branch or raise an issue! If you encounter any big issues, or get really stuck - feel free to contact whoever you think is most relevant to the issue you are encountering. 
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
