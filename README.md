@@ -98,6 +98,3 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 ## Contributors
 [Amber Swarbrick](https://github.com/aswarbs) - Compiler Implementation
 [Toby Clark](https://github.com/tobybenjaminclark) - Verification Algorithm Implementation
-
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
